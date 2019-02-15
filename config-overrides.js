@@ -9,6 +9,6 @@ module.exports = function override(config, env) {
     displayName: true,
     fileName: false,
   })
-  config = rewireEslint(config, env)
+  // config = rewireEslint(config, env)
   return config
 };

@@ -1,8 +1,21 @@
+import { plural } from 'pluralize'
 import { combineReducers } from 'redux'
-import todos from './todos'
-import filter from './filter'
+
+const initialState = {}
+const keys = ['chapter', 'topic']
+const actionTypes = ['fetch', 'add']
+keys.forEach(key => {
+  initialState[key] = {}
+  initialState[key][plural(key)] = []
+  actionTypes.forEach(actionType => {
+    initialState[key][actionType] = {
+      loading: false,
+      success: false,
+      failure: true
+    }
+  })
+})
 
 export default combineReducers({
-  todos,
-  filter
+  data: (state = initialState, action) => state
 })

@@ -1,12 +1,30 @@
 import React, { Component } from 'react'
 import { Provider } from 'react-redux'
-import { createStore } from 'redux'
+import { createStore, combineReducers } from 'redux'
 import { BrowserRouter } from 'react-router-dom'
-import AddTodoInput from './components/AddTodoInput'
-import Footer from './components/Footer'
-import rootReducer from './reducers'
-import Routes from './routes'
-import { AppContainer, Card, FlexColumn } from './App.style'
+import State from './utils/State'
+import { AppContainer } from './App.style'
+
+const duck = new State({
+  schema: {
+    chapter: {
+      children: ['topic'],
+    },
+    topic: {
+      children: ['learningObjective']
+    },
+    learningObjective: {}
+  },
+  presets: {
+    fetch: () => '',
+    add: () => ''
+  },
+  parsers: [],
+})
+
+const rootReducer = combineReducers({
+  data: duck.reducer
+})
 
 const store = createStore(
   rootReducer,
@@ -19,13 +37,7 @@ class App extends Component {
       <Provider store={store}>
         <BrowserRouter>
           <AppContainer>
-            <Card>
-              <FlexColumn>
-                <AddTodoInput />
-                <Routes />
-                <Footer />
-              </FlexColumn>
-            </Card>
+            <div>fdjgk</div>
           </AppContainer>
         </BrowserRouter>
       </Provider>
