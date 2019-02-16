@@ -1,4 +1,5 @@
 import { plural } from 'pluralize'
+import _ from 'lodash'
 import requestToGraphql from './requestToGraphql'
 
 class State {
@@ -52,10 +53,13 @@ class State {
     return state
   }
 
+  extractDataForDispatch(data) {
+    console.log(JSON.stringify(data))
+  }
+
   query = async ({query, type, variables = {}}) => {
-    const res = await requestToGraphql(query)
-    console.log(res)
-    console.log(type, variables)
+    const { data } = await requestToGraphql(query)
+    this.extractDataForDispatch(data)
   }
 }
 

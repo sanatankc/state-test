@@ -6,6 +6,10 @@ import { BrowserRouter } from 'react-router-dom'
 import State from './utils/State'
 import { AppContainer } from './App.style'
 
+const parser = (schema, field) => {
+  return field
+}
+
 const duck = new State({
   schema: {
     chapter: {
@@ -16,11 +20,11 @@ const duck = new State({
     },
     learningObjective: {}
   },
+  parser,
   presets: {
     fetch: () => '',
     add: () => ''
   },
-  parsers: [],
 })
 
 const fetchChapters = () => duck.query({
@@ -28,6 +32,10 @@ const fetchChapters = () => duck.query({
     chapters {
       id
       title
+      topics {
+        id
+        title
+      }
     }
   }`,
   type: duck.action.chapterFetch,
