@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Provider } from 'react-redux'
 import { createStore, combineReducers } from 'redux'
+import gql from 'graphql-tag'
 import { BrowserRouter } from 'react-router-dom'
 import State from './utils/State'
 import { AppContainer } from './App.style'
@@ -21,6 +22,17 @@ const duck = new State({
   },
   parsers: [],
 })
+
+const fetchChapters = () => duck.query({
+  query: gql`{
+    chapters {
+      id
+      title
+    }
+  }`,
+  type: duck.action.chapterFetch,
+})
+fetchChapters()
 
 const rootReducer = combineReducers({
   data: duck.reducer

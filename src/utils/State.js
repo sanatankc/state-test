@@ -1,4 +1,5 @@
 import { plural } from 'pluralize'
+import requestToGraphql from './requestToGraphql'
 
 class State {
   constructor(config) {
@@ -6,6 +7,23 @@ class State {
     this.parsers = config.parsers
     this.presets = config.presets
     this.createInitialState()
+    this.action = this.createActions()
+  }
+
+  createActions() {
+    const stateRoots = Object.keys(this.schema)
+    const actionTypes = Object.keys(this.presets)
+    return stateRoots
+      .map(stateRoot => actionTypes.map(actionType => `${stateRoot}/${actionType}`))
+      .reduce((prev, curr) => prev.concat(curr))
+      .reduce((prev, curr) => {
+        const keyName = curr.split('/')
+        keyName[1] = keyName[1].charAt(0).toUpperCase() + keyName[1].slice(1)
+        return {
+          ...prev,
+          [keyName.join('')]: curr
+        }
+      }, {})
   }
 
   createInitialState() {
@@ -32,6 +50,12 @@ class State {
       return this.presets[actionType[1]]()
     }
     return state
+  }
+
+  query = async ({query, type, variables = {}}) => {
+    const res = await requestToGraphql(query)
+    console.log(res)
+    console.log(type, variables)
   }
 }
 
