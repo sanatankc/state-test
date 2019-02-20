@@ -102,11 +102,13 @@ class State {
       }
     }
     createLocalSchema(data)
-    return Object.keys(localSchema)
+    const payload = Object.keys(localSchema)
       .map(rootKey => ({
         [rootKey]: getArrayX(data, localSchema[rootKey].path)
       }))
       .reduce((acc, curr) => ({...acc, ...curr}), {})
+    Object.keys(payload).map()
+    return payload
   }
 
   query = async ({query, type, variables = {}, key}) => {

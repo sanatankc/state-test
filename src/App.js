@@ -95,7 +95,7 @@ class App extends Component {
       <Provider store={store}>
         <BrowserRouter>
           <AppContainer>
-            <div>fdjgk</div>
+            <div>duck</div>
           </AppContainer>
         </BrowserRouter>
       </Provider>
