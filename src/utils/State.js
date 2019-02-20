@@ -1,5 +1,5 @@
 import { plural } from 'pluralize'
-import { get, merge, isPlainObject } from 'lodash'
+import { get, merge, isPlainObject, cloneDeep } from 'lodash'
 import requestToGraphql from './requestToGraphql'
 
 class State {
@@ -49,9 +49,9 @@ class State {
   }
 
   reducer = (state = this.initialState, action) => {
-    if (action.type && (action.type in Object.keys(this.presets))) {
-      const actionType = action.type.split('/')
-      return this.presets[actionType[1]](state, action)
+    const actionType = action.type.split('/')
+    if (action.type && Object.keys(this.presets).includes(actionType[1])) {
+      return this.presets[actionType[1]](cloneDeep(state), action)
     }
     return state
   }

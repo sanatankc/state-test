@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { Provider } from 'react-redux'
-import { singular } from 'pluralize'
+import { singular, plural } from 'pluralize'
 import { createStore, combineReducers } from 'redux'
 import gql from 'graphql-tag'
 import { BrowserRouter } from 'react-router-dom'
+import mergeCollectionsById from './utils/mergeCollectionsById'
 import State from './utils/State'
 import { AppContainer } from './App.style'
 
@@ -24,6 +25,16 @@ const parser = (schema, field) => {
   }
   return false
 }
+const fetchAddHandler = (state, action) => {
+  const nextState = state
+  for (const key of Object.keys(action.payload.extractedData)) {
+    nextState[key][plural(key)] = mergeCollectionsById(
+      nextState[key][plural(key)],
+      action.payload.extractedData[key]
+    )
+  }
+  return nextState
+}
 
 const duck = new State({
   schema: {
@@ -37,14 +48,19 @@ const duck = new State({
   },
   parser,
   presets: {
-    fetch: () => {
-
+    fetch: (state, action) => {
+      let nextState = state
+      if (action.type.split('/')[2] === 'success') {
+        nextState = fetchAddHandler(state, action)
+      }
+      return nextState
     },
-    add: () => ''
+    add: (state, action) => {
+      console.log('add', state, action)
+      return state
+    },
   },
 })
-
-
 
 const rootReducer = combineReducers({
   data: duck.reducer
