@@ -39,19 +39,21 @@ class State {
       this.initialState[stateRoot] = {}
       this.initialState[stateRoot][plural(stateRoot)] = []
       actionTypes.forEach(actionType => {
-        this.initialState[stateRoot][actionType] = {
-          loading: false,
-          success: false,
-          failure: true
-        }
+        this.initialState[stateRoot][actionType] = {}
       })
     })
   }
 
   reducer = (state = this.initialState, action) => {
+    const nextState = cloneDeep(state)
     const actionType = action.type.split('/')
     if (action.type && Object.keys(this.presets).includes(actionType[1])) {
-      return this.presets[actionType[1]](cloneDeep(state), action)
+      nextState[actionType[0]][actionType[1]][action.key] = {
+        loading: actionType[2] === 'loading',
+        failure: actionType[2] === 'failure',
+        success: actionType[2] === 'success'
+      }
+      return this.presets[actionType[1]](nextState, action)
     }
     return state
   }
@@ -107,14 +109,16 @@ class State {
       .reduce((acc, curr) => ({...acc, ...curr}), {})
   }
 
-  query = async ({query, type, variables = {}}) => {
+  query = async ({query, type, variables = {}, key}) => {
     try {
       this.store.dispatch({
-        type: `${type}/loading`
+        type: `${type}/loading`,
+        key
       })
-      const { data } = await requestToGraphql(query)
+      const { data } = await requestToGraphql(query, variables)
       this.store.dispatch({
         type: `${type}/success`,
+        key,
         payload: {
           originalData: data,
           extractedData: this.extractDataForDispatch(data)
@@ -122,7 +126,8 @@ class State {
       })
     } catch(e) {
       this.store.dispatch({
-        type: `${type}/failure`
+        type: `${type}/failure`,
+        key
       })
       console.error(e)
     }

@@ -85,6 +85,7 @@ const fetchChapters = () => duck.query({
     }
   }`,
   type: duck.action.chapterFetch,
+  key: 'root'
 })
 fetchChapters()
 
