@@ -1,11 +1,11 @@
 import { plural } from 'pluralize'
-import _ from 'lodash'
+import { get, merge, isPlainObject } from 'lodash'
 import requestToGraphql from './requestToGraphql'
 
 class State {
   constructor(config) {
     this.schema = config.schema
-    this.parsers = config.parsers
+    this.parser = config.parser
     this.presets = config.presets
     this.createInitialState()
     this.action = this.createActions()
@@ -25,6 +25,10 @@ class State {
           [keyName.join('')]: curr
         }
       }, {})
+  }
+
+  addStoreRefrence(store) {
+    this.store = store
   }
 
   createInitialState() {
@@ -47,19 +51,81 @@ class State {
   reducer = (state = this.initialState, action) => {
     if (action.type && (action.type in Object.keys(this.presets))) {
       const actionType = action.type.split('/')
-      console.log(this.presets, action)
-      return this.presets[actionType[1]]()
+      return this.presets[actionType[1]](state, action)
     }
     return state
   }
 
   extractDataForDispatch(data) {
-    console.log(JSON.stringify(data))
+    const localSchema = {}
+    const getPath = (path, key) => path
+      ? `${path}.${key}`
+      : key
+    const getArrayX = (data, arrayXPath) => {
+      const paths = arrayXPath.split('[x].').join('.').split('.')
+      let currentData = get(data, paths[0])
+      for (const path of paths.splice(1)) {
+        let newCurrentData = currentData
+          .map(data => data[path])
+          .filter(data => data)
+        if (Array.isArray(newCurrentData[0])) {
+          newCurrentData = newCurrentData.reduce((acc, curr) => [...acc, ...curr], [])
+        }
+        currentData = newCurrentData
+      }
+      return currentData
+    }
+
+    const createLocalSchema = (data, path='') => {
+      for (const key of Object.keys(data)) {
+        const parsedKey = this.parser(this.schema, key)
+        if (Array.isArray(data[key])) {
+          if (parsedKey) {
+            const mergeAllArrays = data[key].reduce((acc, next) => merge(acc, next), {})
+            localSchema[parsedKey] = {
+              path: getPath(path, key),
+              payload: mergeAllArrays
+            }
+            createLocalSchema(mergeAllArrays, getPath(path, key) + '[x]')
+          }
+        } else if (isPlainObject(data[key])) {
+          if (parsedKey) {
+            localSchema[parsedKey] = {
+              path: getPath(path, key),
+              payload: data[key]
+            }
+            createLocalSchema(data[key], getPath(path, key))
+          }
+        }
+      }
+    }
+    createLocalSchema(data)
+    return Object.keys(localSchema)
+      .map(rootKey => ({
+        [rootKey]: getArrayX(data, localSchema[rootKey].path)
+      }))
+      .reduce((acc, curr) => ({...acc, ...curr}), {})
   }
 
   query = async ({query, type, variables = {}}) => {
-    const { data } = await requestToGraphql(query)
-    this.extractDataForDispatch(data)
+    try {
+      this.store.dispatch({
+        type: `${type}/loading`
+      })
+      const { data } = await requestToGraphql(query)
+      this.store.dispatch({
+        type: `${type}/success`,
+        payload: {
+          originalData: data,
+          extractedData: this.extractDataForDispatch(data)
+        }
+      })
+    } catch(e) {
+      this.store.dispatch({
+        type: `${type}/failure`
+      })
+      console.error(e)
+    }
   }
 }
 
