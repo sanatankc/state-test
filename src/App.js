@@ -71,7 +71,7 @@ const store = createStore(
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 )
 
-duck.addStoreRefrence(store)
+duck.registerStore(store)
 
 const fetchChapters = () => duck.query({
   query: gql`{

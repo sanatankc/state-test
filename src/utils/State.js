@@ -27,7 +27,7 @@ class State {
       }, {})
   }
 
-  addStoreRefrence(store) {
+  registerStore(store) {
     this.store = store
   }
 
@@ -107,8 +107,23 @@ class State {
         [rootKey]: getArrayX(data, localSchema[rootKey].path)
       }))
       .reduce((acc, curr) => ({...acc, ...curr}), {})
-    Object.keys(payload).map()
-    return payload
+    const collapseChildrenData = Object.keys(payload).reduce((acc, key) => ({
+      ...acc,
+      ...{[key]: payload[key].map(item => {
+        return Object.keys(item).reduce((prev, next) => {
+          if (this.parser(this.schema, next)) {
+            return {
+              ...prev,
+              [next]: item[next].map(childItem => ({
+                id: childItem.id
+              }))
+            }
+          }
+          return {...prev, [next]: item[next] }
+        }, {})
+      })}
+    }), {})
+    return collapseChildrenData
   }
 
   query = async ({query, type, variables = {}, key}) => {
