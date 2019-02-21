@@ -8,7 +8,26 @@ class State {
     this.parser = config.parser
     this.presets = config.presets
     this.createInitialState()
+    this.createChildrenSchema()
     this.action = this.createActions()
+  }
+
+  createChildrenSchema() {
+    this.childrenSchema = Object.keys(this.schema).reduce((prev, next) => {
+      const childSchema = prev
+      if (this.schema[next].children) {
+        this.schema[next].children.forEach(child => {
+          if (childSchema[child] && childSchema[child].parent) {
+            childSchema[child].parent.push(next)
+          } else {
+            childSchema[child] = {
+              parent: [next]
+            }
+          }
+        })
+      }
+      return childSchema
+    }, {})
   }
 
   createActions() {
