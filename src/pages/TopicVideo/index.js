@@ -8,7 +8,9 @@ import { getDataById } from '../../utils/data-utils'
 
 const TopicVideo = props => {
   useEffect(() => {
-    fetchVideo(props.match.params.id)
+    if (!get(props.topic, `fetch.video/${props.match.params.id}.success`, false)) {
+      fetchVideo(props.match.params.id)
+    }
   }, [])
 
   const uploadVideo = e => {
@@ -25,7 +27,10 @@ const TopicVideo = props => {
     }
   }
   const topicItem = getDataById(props.topic.topics, props.match.params.id)
-  if ()
+  console.log(get(props.topic, 'fetch'))
+  if (!get(props.topic, `fetch.video/${props.match.params.id}.success`, false)) {
+    return <div>fetching...</div>
+  }
   return (
     <div>
       <input
