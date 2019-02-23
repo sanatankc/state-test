@@ -1,12 +1,6 @@
 import styled from 'styled-components'
 
-export const AppContainer = styled.div`
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`
+export const AppContainer = styled.div``
 export const Card = styled.div`
   box-shadow: 0px 0px 25px 0 rgba(46, 61, 73, 0.1);
   border-radius: 10px;

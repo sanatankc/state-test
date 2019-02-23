@@ -2,7 +2,7 @@ import { cloneDeep, find, findIndex } from 'lodash'
 
 const mergeCollectionsById = (prevData, nextData) => {
   const nextCollection = cloneDeep(prevData)
-  for (const item of nextData) {
+  const mergeItemInCollection = item => {
     const itemInPrevCollection = find(prevData, { id: item.id })
     const itemInPrevCollectionIndex = findIndex(prevData, { id: item.id })
     if (itemInPrevCollection) {
@@ -10,6 +10,13 @@ const mergeCollectionsById = (prevData, nextData) => {
     } else {
       nextCollection.push(item)
     }
+  }
+  if (Array.isArray(nextData)) {
+    for (const item of nextData) {
+      mergeItemInCollection(item)
+    }
+  } else {
+    mergeItemInCollection(nextData)
   }
   return nextCollection
 }

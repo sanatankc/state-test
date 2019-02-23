@@ -126,46 +126,53 @@ class State {
         [rootKey]: getArrayX(data, localSchema[rootKey].path)
       }))
       .reduce((acc, curr) => ({...acc, ...curr}), {})
-    const collapseChildrenData = Object.keys(payload).reduce((acc, key) => ({
-      ...acc,
-      ...{[key]: payload[key].map(item => {
-        return Object.keys(item).reduce((prev, next) => {
-          if (this.parser(this.schema, next)) {
-            return {
-              ...prev,
-              [next]: item[next].map(childItem => ({
-                id: childItem.id
-              }))
-            }
+    const collapseChildrenData = Object.keys(payload).reduce((acc, key) => {
+      const collapseItem = item => Object.keys(item).reduce((prev, next) => {
+        if (this.parser(this.schema, next)) {
+          return {
+            ...prev,
+            [next]: item[next].map(childItem => ({
+              id: childItem.id
+            }))
           }
-          return {...prev, [next]: item[next] }
-        }, {})
-      })}
-    }), {})
+        }
+        return {...prev, [next]: item[next] }
+      }, {})
+      return {
+      ...acc,
+      ...{[key]: Array.isArray(payload[key])
+          ? payload[key].map(item => collapseItem(item))
+          : collapseItem(payload[key])
+      }
+    }}, {})
     return collapseChildrenData
   }
 
-  query = async ({query, type, variables = {}, key}) => {
+  query = async ({query, type, variables = {}, key, changeExtractedData}) => {
     try {
       this.store.dispatch({
         type: `${type}/loading`,
         key
       })
       const { data } = await requestToGraphql(query, variables)
+      let extractedData = this.extractDataForDispatch(data)
+      if (changeExtractedData) {
+        extractedData = changeExtractedData(extractedData, data, type.split('/')[0])
+      }
       this.store.dispatch({
         type: `${type}/success`,
         key,
         payload: {
           originalData: data,
-          extractedData: this.extractDataForDispatch(data)
+          extractedData
         }
       })
     } catch(e) {
+      console.error(e)
       this.store.dispatch({
         type: `${type}/failure`,
         key
       })
-      console.error(e)
     }
   }
 }
