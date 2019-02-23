@@ -79,6 +79,7 @@ class State {
 
   extractDataForDispatch(data) {
     const localSchema = {}
+    console.log(data)
     const getPath = (path, key) => path
       ? `${path}.${key}`
       : key
@@ -86,6 +87,7 @@ class State {
       const paths = arrayXPath.split('[x].').join('.').split('.')
       let currentData = get(data, paths[0])
       for (const path of paths.splice(1)) {
+        currentData = Array.isArray(currentData) ? currentData : [currentData]
         let newCurrentData = currentData
           .map(data => data[path])
           .filter(data => data)
@@ -126,14 +128,17 @@ class State {
         [rootKey]: getArrayX(data, localSchema[rootKey].path)
       }))
       .reduce((acc, curr) => ({...acc, ...curr}), {})
+    console.log(payload)
     const collapseChildrenData = Object.keys(payload).reduce((acc, key) => {
       const collapseItem = item => Object.keys(item).reduce((prev, next) => {
-        if (this.parser(this.schema, next)) {
+        if (item[next] && this.parser(this.schema, next)) {
           return {
             ...prev,
-            [next]: item[next].map(childItem => ({
-              id: childItem.id
-            }))
+            [next]: Array.isArray(item[next])
+              ? item[next].map(childItem => ({
+                  id: childItem.id
+                }))
+              : { id: item[next].id }
           }
         }
         return {...prev, [next]: item[next] }

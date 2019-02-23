@@ -8,6 +8,10 @@ const fetchTopics = input => duck.query({
       order
       title
       description
+      chapter {
+        id
+        order
+      }
     }
   }`,
   type: duck.action.topicFetch,

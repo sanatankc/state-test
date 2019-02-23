@@ -15,6 +15,10 @@ const updateTopic = (id, input) => duck.query({
       order
       title
       description
+      chapter {
+        id
+        order
+      }
     }
   }`,
   type: duck.action.topicUpdate,

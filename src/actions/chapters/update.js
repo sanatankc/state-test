@@ -23,7 +23,7 @@ const updateChapter = (id, input) => duck.query({
     }
   }`,
   type: duck.action.chapterUpdate,
-  key: 'root',
+  key: `root/${id}`,
   variables: {
     id,
     input

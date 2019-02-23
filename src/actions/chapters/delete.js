@@ -15,7 +15,7 @@ const deleteChapter = id => duck.query({
     id
   },
   type: duck.action.chapterDelete,
-  key: 'root'
+  key: `root/${id}`,
 })
 
 export default deleteChapter

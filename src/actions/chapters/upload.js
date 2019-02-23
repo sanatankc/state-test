@@ -9,11 +9,12 @@ const uploadFile = (file, fileInput, connectInput) => duck.query({
     ) {
       id,
       name,
-      uri
+      uri,
+      image
     }
   }`,
   type: duck.action[`${connectInput.type.toLowerCase()}Update`],
-  key: 'root',
+  key: `root/${connectInput.typeId}`,
   variables: {
     file,
     fileInput,

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
+import { get } from 'lodash'
 import Nav from '../../components/Nav'
 import fetchChapters from '../../actions/chapters/fetch'
 import Items from '../../components/Items'
@@ -18,6 +19,28 @@ const Chapters = props => {
     updateChapter(id, {
       title: await getJoke()
     })
+  }
+  const tableLoading = () => {
+    const isFetching = get(props.chapter, 'fetch.root.loading', true)
+    if (isFetching) return 'fetching....'
+    return null
+  }
+  const getLoadingTree = action => {
+    const actionObject = get(props.chapter, action, {})
+    return Object.keys(actionObject).reduce((acc, key) => {
+      const keys = key.split('/')
+      if (keys.length === 2 && keys[0] === 'root') {
+        return {
+          ...acc,
+          [keys[1]]: actionObject[key].loading ? `${action}...` : false
+        }
+      }
+    }, {})
+  }
+
+  const itemsLoading = () => {
+    const actions = ['update', 'delete']
+    return actions.map(action => getLoadingTree(action))
   }
   const uploadThumbnail = (id, file) => {
     uploadFile(
@@ -52,6 +75,8 @@ const Chapters = props => {
         update={updateChapterMock}
         uploadThumbnail={uploadThumbnail}
         delete={id => deleteChapter(id)}
+        itemsLoading={itemsLoading()}
+        tableLoading={tableLoading()}
       />
     </div>
   )
