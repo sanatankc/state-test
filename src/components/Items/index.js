@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 
 const Items = props => {
   const [parentId, setParentId] = useState()
 
   useEffect(() => {
-    if (props.parentItems.length > 0) {
+    if (props.parentItems && props.parentItems.length > 0) {
       setParentId(props.parentItems[0].id)
     }
   }, [props.parentItems])
@@ -15,6 +16,7 @@ const Items = props => {
     }
   }
   const renderItems = () => {
+    console.log(props.itemsLoading)
     const getLoadings = id => (props.itemsLoading || [])
       .map(itemLoading => itemLoading[id])
       .filter(itemLoading => itemLoading)
@@ -34,7 +36,8 @@ const Items = props => {
             accept='image/png,image/jpeg,image/gif'
             style={{ marginRight: '10px' }}
           />
-          <div>{item.thumbnail ? <a target='_blank' href={'https://s3.us-east-2.amazonaws.com/tekie-dev/' + item.thumbnail.uri}>image</a> : null} {item.order} --> {item.title}</div>
+          <div>{item.thumbnail ? <a target='_blank' href={'https://s3.us-east-2.amazonaws.com/tekie-dev/' + item.thumbnail.uri}>image</a> : null}
+           <Link to={props.linkTo + '/' + item.id}>{item.order}</Link> --> {item.title}</div>
         </div>
       )
     })

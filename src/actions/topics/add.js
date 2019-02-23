@@ -22,7 +22,7 @@ const addTopic = ({ chapterConnectId, ...input}) => duck.query({
     }
   }`,
   type: duck.action.topicAdd,
-  key: 'root',
+  key: `root`,
   variables: {
     input,
     chapterConnectId

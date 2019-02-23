@@ -15,7 +15,7 @@ const deleteTopic = id => duck.query({
     id
   },
   type: duck.action.topicDelete,
-  key: 'root'
+  key: `root/${id}`,
 })
 
 export default deleteTopic

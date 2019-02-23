@@ -33,8 +33,38 @@ const Topics = props => {
   }
 
   const fetchData = async () => {
-    await fetchChapters()
-    await fetchTopics()
+    if (!get(props.chapter, 'fetch.root.success', false)) {
+      await fetchChapters()
+    }
+    if (!get(props.topic, 'fetch.root.success', false)) {
+      await fetchTopics()
+    }
+  }
+
+  const tableLoading = () => {
+    const isFetchingChapter = get(props.chapter, 'fetch.root.loading', true)
+    const isFetchingTopic = get(props.topic, 'fetch.root.loading', true)
+
+    if (isFetchingChapter || isFetchingTopic) return 'fetching....'
+    return null
+  }
+
+  const getLoadingTree = action => {
+    const actionObject = get(props.topic, action, {})
+    return Object.keys(actionObject).reduce((acc, key) => {
+      const keys = key.split('/')
+      if (keys.length === 2 && keys[0] === 'root') {
+        return {
+          ...acc,
+          [keys[1]]: actionObject[key].loading ? `${action}...` : false
+        }
+      }
+    }, {})
+  }
+
+  const itemsLoading = () => {
+    const actions = ['update', 'delete']
+    return actions.map(action => getLoadingTree(action))
   }
 
   useEffect(() => {
@@ -50,6 +80,9 @@ const Topics = props => {
         add={addTopicMock}
         update={updateTopicMock}
         delete={id => deleteTopic(id)}
+        itemsLoading={itemsLoading()}
+        tableLoading={tableLoading()}
+        linkTo='/video'
       />
     </div>
   )

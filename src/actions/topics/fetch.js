@@ -15,7 +15,7 @@ const fetchTopics = input => duck.query({
     }
   }`,
   type: duck.action.topicFetch,
-  key: 'root',
+  key: `root`,
   variables: {
     input
   }

@@ -22,7 +22,7 @@ const updateTopic = (id, input) => duck.query({
     }
   }`,
   type: duck.action.topicUpdate,
-  key: 'root',
+  key: `root/${id}`,
   variables: {
     id,
     input

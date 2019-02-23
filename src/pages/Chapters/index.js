@@ -64,8 +64,11 @@ const Chapters = props => {
     })
   }
   useEffect(() => {
-    fetchChapters()
+    if (!get(props.chapter, 'fetch.root.success', false)) {
+      fetchChapters()
+    }
   }, [])
+
   return (
     <div>
       <Nav />
