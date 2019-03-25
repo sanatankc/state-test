@@ -1,15 +1,16 @@
 import { singular, plural } from 'pluralize'
-import mergeCollectionsById from './utils/mergeCollectionsById'
+import mergeListsOfMapsById from './utils/mergeListsOfMapsById'
 import State from './utils/State'
 
 const fetchAddHandler = (state, action) => {
-  const nextState = state
-  for (const key of Object.keys(action.payload.extractedData)) {
-    nextState[key][plural(key)] = mergeCollectionsById(
-      nextState[key][plural(key)],
-      action.payload.extractedData[key]
-    )
-  }
+  let nextState = state
+  action.payload.getIn(['extractedData']).map((val, key) => {
+    console.log(key)
+    nextState = nextState.setIn([key, plural(key)], mergeListsOfMapsById(
+      nextState.getIn([key, plural(key)]),
+      val
+    ))
+  })
   return nextState
 }
 

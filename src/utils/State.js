@@ -1,5 +1,6 @@
 import { plural } from 'pluralize'
 import { get, merge, isPlainObject, cloneDeep } from 'lodash'
+import { fromJS, Map } from 'immutable'
 import requestToGraphql from './requestToGraphql'
 
 class State {
@@ -61,17 +62,18 @@ class State {
         this.initialState[stateRoot][actionType] = {}
       })
     })
+    this.initialState = fromJS(this.initialState)
   }
 
   reducer = (state = this.initialState, action) => {
-    const nextState = cloneDeep(state)
     const actionType = action.type.split('/')
+    let nextState = state
     if (action.type && Object.keys(this.presets).includes(actionType[1])) {
-      nextState[actionType[0]][actionType[1]][action.key] = {
+      nextState = nextState.setIn([actionType[0], actionType[1], action.key], Map({
         loading: actionType[2] === 'loading',
         failure: actionType[2] === 'failure',
         success: actionType[2] === 'success'
-      }
+      }))
       return this.presets[actionType[1]](nextState, action)
     }
     return state
@@ -167,10 +169,10 @@ class State {
       this.store.dispatch({
         type: `${type}/success`,
         key,
-        payload: {
+        payload: fromJS({
           originalData: data,
           extractedData
-        }
+        })
       })
     } catch(e) {
       console.error(e)

@@ -68,12 +68,11 @@ const Chapters = props => {
       fetchChapters()
     }
   }, [])
-
   return (
     <div>
       <Nav />
       <Items
-        items={props.chapter.chapters}
+        items={props.chapter.get('chapters')}
         add={addChapterMock}
         update={updateChapterMock}
         uploadThumbnail={uploadThumbnail}
@@ -85,7 +84,8 @@ const Chapters = props => {
   )
 }
 
-const mapStateToProps = state => ({
-  chapter: state.data.chapter
-})
+const mapStateToProps = state => {
+  return {
+  chapter: state.data.get('chapter')
+}}
 export default connect(mapStateToProps)(Chapters)

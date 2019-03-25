@@ -6,6 +6,7 @@
     "deepdash": "^1.9.5",
     "graphql": "^0.12.3",
     "graphql-tag": "^2.9.2",
+    "immutable": "^4.0.0-rc.12",
     "lodash": "^4.17.11",
     "pluralize": "^7.0.0",
     "prop-types": "^15.6.1",
