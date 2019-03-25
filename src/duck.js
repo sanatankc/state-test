@@ -15,12 +15,15 @@ const fetchAddHandler = (state, action) => {
 }
 
 const deleteHandler = (state, action) => {
-  const nextState = state
-  for (const key of Object.keys(action.payload.extractedData)) {
-    nextState[key][plural(key)] = nextState[key][plural(key)].filter(item =>
-      item.id !== action.payload.extractedData[key].id
-    )
-  }
+  let nextState = state
+  action.payload.getIn(['extractedData']).map((val, key) => {
+    const filteredData = nextState.getIn([key, plural(key)])
+      .filter(item => {
+        console.log(item.get('id'), val.get('id'))
+        return item.get('id') !== val.get('id')
+      })
+    nextState = nextState.setIn([key, plural(key)], filteredData)
+  })
   return nextState
 }
 const parser = (schema, field) => {
