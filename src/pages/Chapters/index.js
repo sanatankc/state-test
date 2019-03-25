@@ -21,12 +21,13 @@ const Chapters = props => {
     })
   }
   const tableLoading = () => {
-    const isFetching = get(props.chapter, 'fetch.root.loading', true)
+    const isFetching = props.chapter.getIn(['fetch', 'root', 'loading'])
+    console.log(isFetching)
     if (isFetching) return 'fetching....'
     return null
   }
   const getLoadingTree = action => {
-    const actionObject = get(props.chapter, action, {})
+    const actionObject = props.chapter.get(action).toJS() || {}
     return Object.keys(actionObject).reduce((acc, key) => {
       const keys = key.split('/')
       if (keys.length === 2 && keys[0] === 'root') {
@@ -40,6 +41,7 @@ const Chapters = props => {
 
   const itemsLoading = () => {
     const actions = ['update', 'delete']
+
     return actions.map(action => getLoadingTree(action))
   }
   const uploadThumbnail = (id, file) => {
@@ -53,16 +55,18 @@ const Chapters = props => {
       }
     )
   }
+
   const addChapterMock = async () => {
-    const { chapters } = props.chapter
-    const order = chapters.length === 0
+    const chapters = props.chapter.get('chapters')
+    const order = chapters.size === 0
       ? 1
-      : Math.max(...chapters.map(chapter => chapter.order)) + 1
+      : Math.max(...chapters.map(chapter => chapter.get('order'))) + 1
     addChapter({
       order,
       title: await getJoke()
     })
   }
+
   useEffect(() => {
     if (!get(props.chapter, 'fetch.root.success', false)) {
       fetchChapters()
@@ -72,7 +76,7 @@ const Chapters = props => {
     <div>
       <Nav />
       <Items
-        items={props.chapter.get('chapters')}
+        items={props.chapter.get('chapters').toJS()}
         add={addChapterMock}
         update={updateChapterMock}
         uploadThumbnail={uploadThumbnail}

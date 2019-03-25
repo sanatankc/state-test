@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 const Items = props => {
   const [parentId, setParentId] = useState()
-
+  console.log(props)
   useEffect(() => {
     if (props.parentItems && props.parentItems.length > 0) {
       setParentId(props.parentItems[0].id)
@@ -16,7 +16,6 @@ const Items = props => {
     }
   }
   const renderItems = () => {
-    console.log(props.itemsLoading)
     const getLoadings = id => (props.itemsLoading || [])
       .map(itemLoading => itemLoading[id])
       .filter(itemLoading => itemLoading)
