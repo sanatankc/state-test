@@ -93,7 +93,7 @@ class State {
 }
 
   extractDataForDispatch(data) {
-    // createLoaclSchema identifies all top-level keys in nested tree
+    // createLocalSchema identifies all top-level keys in nested tree
     // assigns it to localSchema
     const localSchema = {}
 
@@ -128,6 +128,46 @@ class State {
        * root-level keys from schema and assigns them to localSchema
        */
 
+      /**
+       * if
+       *   data = {
+       *     chapters: {
+       *       id: 0,
+       *       title: 'A B C'
+       *       topics: [
+       *         {
+       *           id: 0,
+       *           title: 'B C D',
+       *           learningObjective: {
+       *             id: 3
+       *           }
+       *         },
+       *         {
+       *           id: 1,
+       *           title: 'C C D'
+       *         }
+       *       ]
+       *     }
+       *   }
+       *
+       * then
+       *   on createLocalSchema(data)
+       *   localSchema becomes --> {
+       *     chapters: {
+       *       path: 'chapters',
+       *       ...payload
+       *     },
+       *     topics: {
+       *       path: 'chapters.topics'
+       *       ...payload
+       *     },
+       *     learningObjective: {
+       *       path: 'chapters.topics.learningObjective'
+       *       ...payload
+       *     }
+       *   }
+       *
+       */
       // This👇 loops through all keys in top level root
       // (Because this is a revursive function
       // all keys on children will be top-level key on each
@@ -148,7 +188,7 @@ class State {
               path: getPath(path, key),
               payload: mergeAllArrays
             }
-            // calls function revursively
+            // calls function recursively
             createLocalSchema(mergeAllArrays, `${getPath(path, key)}`)
           }
         }
@@ -199,6 +239,8 @@ class State {
       const { data } = await requestToGraphql(query, variables)
       let extractedData = this.extractDataForDispatch(data)
       if (changeExtractedData) {
+        // changeExtractedData changes nested payload to
+        // flat with refrences
         extractedData = changeExtractedData(extractedData, data, type.split('/')[0])
       }
       this.store.dispatch({

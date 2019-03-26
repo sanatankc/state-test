@@ -5,7 +5,6 @@ import State from './utils/State'
 const fetchAddHandler = (state, action) => {
   let nextState = state
   action.payload.getIn(['extractedData']).map((val, key) => {
-    console.log(key)
     nextState = nextState.setIn([key, plural(key)], mergeListsOfMapsById(
       nextState.getIn([key, plural(key)]),
       val
