@@ -62,6 +62,7 @@ class State {
         this.initialState[stateRoot][actionType] = {}
       })
     })
+    this.initialState['errors'] = {}
     this.initialState = fromJS(this.initialState)
   }
 
@@ -80,13 +81,21 @@ class State {
   }
 
   extractDataForDispatch(data) {
+    // createLoaclSchema identifies all top-level keys in nested tree
+    // assigns it to localSchema
     const localSchema = {}
-    console.log(data)
+
     const getPath = (path, key) => path
       ? `${path}.${key}`
       : key
-    const getArrayX = (data, arrayXPath) => {
-      const paths = arrayXPath.split('[x].').join('.').split('.')
+
+    const getKeywisePayload = (data, keyPath) => {
+      /**
+       * Given path and data, it extracts keywise payload from server response.
+       * Basically, what it does is tranverse through the data to find all the
+       * instances of given key, merge them together and returns a payload.
+       */
+      const paths = keyPath.split('.')
       let currentData = get(data, paths[0])
       for (const path of paths.splice(1)) {
         currentData = Array.isArray(currentData) ? currentData : [currentData]
@@ -102,35 +111,49 @@ class State {
     }
 
     const createLocalSchema = (data, path='') => {
+      /**
+       * Recursively tranverses through server payload to find all
+       * root-level keys from schema and assigns them to localSchema
+       */
+
+      // This👇 loops through all keys in top level root
+      // (Because this is a revursive function
+      // all keys on children will be top-level key on each
+      // recursive operation)
       for (const key of Object.keys(data)) {
-        const parsedKey = this.parser(this.schema, key)
-        if (Array.isArray(data[key])) {
+        // Checks if the value is either object or array
+        if (Array.isArray(data[key]) || isPlainObject(data[key])) {
+          // parses root key to check whether it is present in schema
+          const parsedKey = this.parser(this.schema, key)
           if (parsedKey) {
-            const mergeAllArrays = data[key].reduce((acc, next) => merge(acc, next), {})
+            // merges all arrays to combine all possible key props
+            // (if the prop value is array of objects)
+            const mergeAllArrays = Array.isArray(data[key])
+              ? data[key].reduce((acc, next) => merge(acc, next), {})
+              : data[key]
+            // sets in localSchema
             localSchema[parsedKey] = {
               path: getPath(path, key),
               payload: mergeAllArrays
             }
-            createLocalSchema(mergeAllArrays, getPath(path, key) + '[x]')
-          }
-        } else if (isPlainObject(data[key])) {
-          if (parsedKey) {
-            localSchema[parsedKey] = {
-              path: getPath(path, key),
-              payload: data[key]
-            }
-            createLocalSchema(data[key], getPath(path, key))
+            // calls function revursively
+            createLocalSchema(mergeAllArrays, `${getPath(path, key)}`)
           }
         }
       }
     }
+
     createLocalSchema(data)
+    // converts localSchema to seperate payloads
     const payload = Object.keys(localSchema)
       .map(rootKey => ({
-        [rootKey]: getArrayX(data, localSchema[rootKey].path)
+        [rootKey]: getKeywisePayload(data, localSchema[rootKey].path)
       }))
       .reduce((acc, curr) => ({...acc, ...curr}), {})
-    console.log(payload)
+
+    // collapses children's data and apart from id as refrence
+    // --> This could be merged with getKeywisePayload
+    // Also ❌ @TODO --> children should also have parent's data
     const collapseChildrenData = Object.keys(payload).reduce((acc, key) => {
       const collapseItem = item => Object.keys(item).reduce((prev, next) => {
         if (item[next] && this.parser(this.schema, next)) {
