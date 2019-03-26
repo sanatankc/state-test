@@ -1,6 +1,6 @@
 import { plural } from 'pluralize'
 import { get, merge, isPlainObject, cloneDeep } from 'lodash'
-import { fromJS, Map } from 'immutable'
+import { fromJS, Map, List } from 'immutable'
 import requestToGraphql from './requestToGraphql'
 
 class State {
@@ -75,10 +75,22 @@ class State {
         failure: actionType[2] === 'failure',
         success: actionType[2] === 'success'
       }))
+      if (actionType[2] === 'failure') {
+        const errorKey = actionType.slice(0, -1).join('/')
+        const errorKeyInErrors = nextState.getIn(['errors', errorKey])
+        const errorMap = Map({
+          error: action.error,
+          uniqId: action.uniqId
+        })
+        const errorToPush = List.isList(errorKeyInErrors)
+          ? errorKeyInErrors.push(errorMap)
+          : List(errorMap)
+        nextState = nextState.setIn(['errors', errorKey], errorToPush)
+      }
       return this.presets[actionType[1]](nextState, action)
     }
-    return state
-  }
+  return state
+}
 
   extractDataForDispatch(data) {
     // createLoaclSchema identifies all top-level keys in nested tree
@@ -178,7 +190,7 @@ class State {
     return collapseChildrenData
   }
 
-  query = async ({query, type, variables = {}, key, changeExtractedData}) => {
+  query = async ({query, type, variables = {}, key, changeExtractedData, uniqId = null}) => {
     try {
       this.store.dispatch({
         type: `${type}/loading`,
@@ -201,7 +213,9 @@ class State {
       console.error(e)
       this.store.dispatch({
         type: `${type}/failure`,
-        key
+        error: e,
+        key,
+        uniqId
       })
     }
   }
