@@ -1,9 +1,8 @@
 import { plural } from 'pluralize'
 import { get, merge, isPlainObject } from 'lodash'
 import { fromJS, Map, List } from 'immutable'
-import requestToGraphql from './requestToGraphql'
 import { getDataById } from './data-utils'
-import handlers from '../auto-state/handlers'
+import handlers from './handlers'
 
 const flatAndMergePayload = payload => {
   const mergedPayload = {}
@@ -12,7 +11,11 @@ const flatAndMergePayload = payload => {
       for (const key of Object.keys(item)) {
         if (!Array.isArray(item[key]) || item[key].length) {
           if (mergedPayload[key]) {
-            mergedPayload[key].push(item[key])
+            if (Array.isArray(item[key])) {
+              mergedPayload[key] = [...mergedPayload[key], ...item[key]]
+            } else {
+              mergedPayload[key].push(item[key])
+            }
           } else {
             mergedPayload[key] = item[key]
           }
@@ -23,6 +26,16 @@ const flatAndMergePayload = payload => {
   return mergedPayload
 }
 
+const mergeDuplicates = arr =>
+  arr.reduce((acc, current) => {
+    const x = acc.findIndex(item => item.id === current.id)
+    if (x === -1) {
+      return acc.concat([current])
+    }
+    acc[x] = { ...acc[x], ...current }
+    return acc
+  }, [])
+
 class State {
   constructor(config) {
     this.schema = config.schema
@@ -30,6 +43,7 @@ class State {
     this.createInitialState()
     this.createChildrenSchema()
     this.createPossibleRootKeys()
+    this.requestToGraphql = config.graphqlLib
     this.overrideAutoReducers = {}
     this.action = this.createActions()
   }
@@ -92,7 +106,7 @@ class State {
 
   createInitialState() {
     const stateRoots = Object.keys(this.schema)
-    const actionTypes = Object.keys(this.presets)
+    const actionTypes = Object.keys(handlers)
     this.initialState = {}
     stateRoots.forEach(stateRoot => {
       this.initialState[stateRoot] = {}
@@ -141,7 +155,7 @@ class State {
         const overrideReducer = this.overrideAutoReducers[action.uniqueId]
         return overrideReducer(nextState, action)
       }
-      return this.presets[actionType[1]](nextState, action)
+      return handlers[actionType[1]](this.schema)(nextState, action)
     }
     return state
   }
@@ -273,6 +287,11 @@ class State {
     )
     // merge all keys with same name and flat array of objects to object
     payload = flatAndMergePayload(payload)
+    // mergeAllDuplicates with same ids
+    payload = Object.keys(payload).reduce((acc, key) => {
+      acc[key] = mergeDuplicates(payload[key])
+      return acc
+    }, {})
 
     // collapses children's data and apart from id as reference
     // --> This could be merged with getKeywisePayload
@@ -343,7 +362,6 @@ class State {
         }
       }
     }
-    console.log(collapseChildrenData)
     return collapseChildrenData
   }
 
@@ -351,7 +369,7 @@ class State {
     query,
     type,
     variables = {},
-    key,
+    key = 'root',
     changeExtractedData,
     overrideAutoReducer = null,
     uniqId = null
@@ -362,7 +380,7 @@ class State {
         key,
         autoReducer: true
       })
-      const { data } = await requestToGraphql(query, variables)
+      const { data } = await this.requestToGraphql(query, variables)
       let extractedData = this.extractDataForDispatch(data)
       if (changeExtractedData) {
         // changeExtractedData changes nested payload to

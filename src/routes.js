@@ -1,10 +1,12 @@
 import React from 'react'
 import { Route, Switch } from 'react-router-dom'
+import State from 'auto-state'
 import Root from './pages/Root'
 import Chapters from './pages/Chapters'
 import Topics from './pages/Topics'
 import TopicVideo from './pages/TopicVideo'
 
+console.log(State)
 const Routes = () => (
   <Switch>
     <Route exact path='/' component={Root} />

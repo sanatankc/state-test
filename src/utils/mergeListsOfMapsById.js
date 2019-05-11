@@ -12,11 +12,12 @@ const mergeListsOfMapsById = (collectionA, collectionB) => {
   // collectionB could be either List of Maps or Map
   // if Map --> convert into List of Map
   if (!List.isList(collectionB)) {
-    collectionB = List([ collectionB ])
+    collectionB = List([collectionB])
   }
   collectionB.forEach(itemB => {
-    const indexOfItemBInCollectionA =
-      collectionA.findIndex(itemA => itemA.get('id') === itemB.get('id'))
+    const indexOfItemBInCollectionA = collectionA.findIndex(
+      itemA => itemA.get('id') === itemB.get('id')
+    )
     if (indexOfItemBInCollectionA > -1) {
       mergedList = mergedList.update(indexOfItemBInCollectionA, item => item.merge(itemB))
     } else {
