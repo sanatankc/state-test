@@ -1,0 +1,50 @@
+{
+  "name": "duck-state",
+  "version": "1.2.3",
+  "description": "Auto State Management",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/babel src --out-dir lib --ignore '**/*.test.js'",
+    "test": "mocha --require @babel/register --watch 'src/**/**test.js'"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "useBuiltIns": "entry"
+        }
+      ]
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties",
+      "@babel/plugin-transform-runtime"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tekie-labs/tekie-redux-state-managment.git"
+  },
+  "author": "Sanatan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tekie-labs/tekie-redux-state-managment/issues"
+  },
+  "homepage": "https://github.com/tekie-labs/tekie-redux-state-managment#readme",
+  "dependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/runtime": "^7.4.4",
+    "immutable": "^4.0.0-rc.12",
+    "lodash": "^4.17.11",
+    "pluralize": "^7.0.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
+    "@babel/register": "^7.4.4",
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4"
+  }
+}
