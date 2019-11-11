@@ -152,7 +152,15 @@ const quiz = async () =>
 
 const Root = () => {
   const fetchingYo = async () => {
-    await fetchTopicJourney()
+    const data = await fetchTopicJourney('cjuvivrym00011hupi1yaydln')
+    duck.merge(
+      prevState => ({
+        learningObjective: {}
+      }),
+      {
+        key: 'fetchTopicJourney/cjuvivrym00011hupi1yaydln'
+      }
+    )
   }
   useEffect(() => {
     fetchingYo()
